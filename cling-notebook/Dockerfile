@@ -1,17 +1,20 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-# Ubuntu 16.04 (xenial) from 2018-02-28
-# https://github.com/docker-library/official-images/commit/8728671fdca3dfc029be4ab838ab5315aa125181
-FROM ubuntu:xenial-20180228@sha256:e348fbbea0e0a0e73ab0370de151e7800684445c509d46195aef73e090a49bd6
+# Ubuntu 16.04 (xenial)
+FROM ubuntu:xenial
 
-LABEL maintainer="Jupyter Project <jupyter@googlegroups.com>"
+LABEL maintainer="Rebot"
 
+# Activate 'root' user
 USER root
+
+# Configure environment
+ENV TINI_VERSION v0.18.0
+ENV DEBIAN_FRONTEND noninteractive
 
 # Install all OS dependencies for notebook server that starts but lacks all
 # features (e.g., download as all possible file formats)
-ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get -yq dist-upgrade \
  && apt-get install -yq --no-install-recommends \
     wget \
@@ -27,10 +30,8 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
 
 # Install Tini
-RUN wget --quiet https://github.com/krallin/tini/releases/download/v0.10.0/tini && \
-    echo "1361527f39190a7338a0b434bd8c88ff7233ce7b9a4876f3315c22fce7eca1b0 *tini" | sha256sum -c - && \
-    mv tini /usr/local/bin/tini && \
-    chmod +x /usr/local/bin/tini
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/local/bin/tini
+RUN chmod +x /usr/local/bin/tini
 
 # Configure environment
 ENV CONDA_DIR=/opt/conda \
@@ -54,6 +55,8 @@ RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
     fix-permissions $HOME && \
     fix-permissions $CONDA_DIR
 
+
+# Activate 'jovyan' user
 USER $NB_UID
 
 # Setup work directory for backward-compatibility
@@ -61,7 +64,7 @@ RUN mkdir /home/$NB_USER/work && \
     fix-permissions /home/$NB_USER
 
 # Install conda as jovyan and check the md5 sum provided on the download site
-ENV MINICONDA_VERSION 4.4.10
+ENV MINICONDA_VERSION latest
 RUN cd /tmp && \
     wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
     echo "bec6203dbb2f53011e974e9bf4d46e93 *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \

@@ -5,12 +5,15 @@
 set -e
 
 # Exec the specified command or fall back on bash
+# $# returns the number of parameters passed as arguments
+# if the number of arguments is -eq equal to 0, then...
 if [ $# -eq 0 ]; then
     cmd=bash
 else
     cmd=$*
 fi
 
+# $0 returns the path of the current script
 for f in /usr/local/bin/start-notebook.d/*; do
   case "$f" in
     *.sh)
