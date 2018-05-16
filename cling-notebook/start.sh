@@ -8,8 +8,14 @@ set -e
 # $# returns the number of parameters passed as arguments
 # if the number of arguments is -eq equal to 0, then...
 if [ $# -eq 0 ]; then
+    # when no arguments are passed,
+    # fall back on bash
     cmd=bash
 else
+    # when arguments are passed, use them to
+    # call the command past as argument (if everything
+    # went right). Either use $* of $@ without quotes.
+    # If quotes are introduced,
     cmd=$*
 fi
 
